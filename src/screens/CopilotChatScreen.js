@@ -1,132 +1,181 @@
-// src/screens/CopilotChatScreen.js
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, SafeAreaView, Modal } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, Modal } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../constants/theme';
-
-const OLDER_CHATS = [
-  { id: '1', title: 'NIFTY Expiry Gamma Walk', time: 'Yesterday', messages: 6 },
-  { id: '2', title: 'Tata Motors Invalidation Check', time: '2 days ago', messages: 4 },
-  { id: '3', title: 'Crude Oil Impact on Paints', time: 'Nov 01', messages: 8 },
-];
+import { THEME } from '../constants/theme';
 
 export default function CopilotChatScreen() {
   const [messages, setMessages] = useState([
     {
       id: '1',
-      sender: 'ai',
-      text: 'Hi Buddy, I am BROW AI Copilot. Ask me about multi-timeframe breakouts, institutional order flows, or risk auditing.',
+      sender: 'copilot',
+      text: 'Hello Priya, I am your institutional trading copilot. Ask me about breakout setups, factor rankings, or portfolio risk assessments.'
     }
   ]);
-  const [input, setInput] = useState('');
-  const [showHistory, setShowHistory] = useState(false);
+  const [inputText, setInputText] = useState('');
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
-  const sendQuery = (textToSend) => {
-    const query = textToSend || input;
+  const pastSessions = [
+    { id: 's1', title: 'NIFTY 50 Expiry Structure Review', time: 'Yesterday, 3:30 PM' },
+    { id: 's2', title: 'Breakout Scans: IT & Pharma Squeeze', time: 'Nov 4, 11:20 AM' },
+    { id: 's3', title: 'Stop-Loss Sizing for Momentum Book', time: 'Nov 2, 02:15 PM' }
+  ];
+
+  const quickPrompts = [
+    'Audit my risk on RELIANCE',
+    'Scan top VWAP breakouts',
+    'Explain US CPI impact on FIIs'
+  ];
+
+  const handleSend = (textToSend) => {
+    const query = textToSend || inputText;
     if (!query.trim()) return;
 
-    const userMsg = { id: Date.now().toString(), sender: 'user', text: query };
-    setMessages((prev) => [...prev, userMsg]);
-    setInput('');
+    const userMsg = {
+      id: Date.now().toString(),
+      sender: 'user',
+      text: query.trim()
+    };
 
+    setMessages((prev) => [...prev, userMsg]);
+    setInputText('');
+
+    // Simulated Copilot intelligence response
     setTimeout(() => {
-      const aiReply = {
+      let replyText = `Analyzing market depth for: "${query}". Momentum is strong with sustained institutional participation above VWAP. Keep trailing stop at prior swing low.`;
+      
+      if (query.toLowerCase().includes('risk') || query.toLowerCase().includes('reliance')) {
+        replyText = 'RELIANCE: Current structure is bullish above ₹2,950. Recommended stop-loss is ₹2,910 with 1:2.4 Risk-to-Reward ratio.';
+      } else if (query.toLowerCase().includes('cpi')) {
+        replyText = 'Macro Outlook: US CPI expectation is 2.4%. Any figure lower signals rate cuts, positive for emerging market equities (NIFTY).';
+      }
+
+      const botMsg = {
         id: (Date.now() + 1).toString(),
-        sender: 'ai',
-        text: `Analysis for "${query}": Structure indicates neutral-to-bullish continuation with key invalidation at ₹24,100 support. Institutional accumulation index remains high at 84%.`,
+        sender: 'copilot',
+        text: replyText
       };
-      setMessages((prev) => [...prev, aiReply]);
+      setMessages((prev) => [...prev, botMsg]);
     }, 600);
   };
 
-  const loadPastSession = (session) => {
-    setShowHistory(false);
-    setMessages([
-      { id: '1', sender: 'user', text: session.title },
-      { id: '2', sender: 'ai', text: `Restored session from ${session.time}. Key parameters verified.` },
-    ]);
+  const renderMessageItem = ({ item }) => {
+    const isUser = item.sender === 'user';
+    return (
+      <View style={[styles.msgWrapper, isUser ? styles.msgWrapperUser : styles.msgWrapperCopilot]}>
+        <View style={[styles.msgBubble, isUser ? styles.msgBubbleUser : styles.msgBubbleCopilot]}>
+          <Text style={[styles.msgText, isUser ? styles.msgTextUser : styles.msgTextCopilot]}>
+            {item.text}
+          </Text>
+        </View>
+      </View>
+    );
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* Header with History Clock Icon */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>BROW AI Copilot</Text>
-          <Text style={styles.headerSub}>Structured Intelligence Engine</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.historyBtn}
-          onPress={() => setShowHistory(true)}
-        >
-          <Ionicons name="time-outline" size={20} color={COLORS.primaryLight} />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView style={styles.chatArea} contentContainerStyle={{ padding: 16 }}>
-        {messages.map((m) => (
-          <View
-            key={m.id}
-            style={[styles.bubble, m.sender === 'user' ? styles.userBubble : styles.aiBubble]}
-          >
-            {m.sender === 'ai' && (
-              <Ionicons name="sparkles" size={14} color={COLORS.primaryLight} style={{ marginBottom: 4 }} />
-            )}
-            <Text style={styles.bubbleText}>{m.text}</Text>
-          </View>
-        ))}
-      </ScrollView>
-
-      {/* Suggested Quick Prompts */}
-      <View style={styles.quickPrompts}>
-        {['Top Breakouts Today', 'Audit Reliance Risk', 'NIFTY Expiry OI Walk'].map((p) => (
-          <TouchableOpacity key={p} style={styles.promptChip} onPress={() => sendQuery(p)}>
-            <Text style={styles.promptChipText}>{p}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Bottom Input Box */}
-      <View style={styles.inputBox}>
-        <TextInput
-          placeholder="Ask BROW anything..."
-          placeholderTextColor={COLORS.textMuted}
-          style={styles.chatInput}
-          value={input}
-          onChangeText={setInput}
-        />
-        <TouchableOpacity style={styles.sendButton} onPress={() => sendQuery(input)}>
-          <Ionicons name="arrow-up" size={18} color="#FFF" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Older Chats Modal */}
-      <Modal visible={showHistory} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Older Copilot Sessions</Text>
-              <TouchableOpacity onPress={() => setShowHistory(false)}>
-                <Ionicons name="close" size={20} color={COLORS.textPrimary} />
-              </TouchableOpacity>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <KeyboardAvoidingView 
+        style={styles.keyboardContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.container}>
+          {/* Header Bar */}
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.headerTitle}>AI Trade Copilot</Text>
+              <Text style={styles.headerSubtitle}>Conversational Alpha Assistant</Text>
             </View>
-            {OLDER_CHATS.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.sessionItem}
-                onPress={() => loadPastSession(item)}
-              >
-                <View>
-                  <Text style={styles.sessionTitle}>{item.title}</Text>
-                  <Text style={styles.sessionMeta}>{item.time} • {item.messages} prompts</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
-              </TouchableOpacity>
-            ))}
+            <TouchableOpacity 
+              style={styles.historyBtn}
+              onPress={() => setShowHistoryModal(true)}
+            >
+              <Ionicons name="time-outline" size={22} color="#00F2FE" />
+            </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
 
+          {/* Quick Starter Chips */}
+          <View style={styles.chipsContainer}>
+            <FlatList
+              horizontal
+              data={quickPrompts}
+              keyExtractor={(item, index) => index.toString()}
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <TouchableOpacity 
+                  style={styles.chip}
+                  onPress={() => handleSend(item)}
+                >
+                  <Text style={styles.chipText}>{item}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+
+          {/* Messages Feed */}
+          <FlatList
+            data={messages}
+            keyExtractor={(item) => item.id}
+            renderItem={renderMessageItem}
+            contentContainerStyle={styles.messagesList}
+            showsVerticalScrollIndicator={false}
+          />
+
+          {/* Input Bar */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Ask Copilot about stocks, setups or risk..."
+              placeholderTextColor="#64748B"
+              value={inputText}
+              onChangeText={setInputText}
+              onSubmitEditing={() => handleSend()}
+              returnKeyType="send"
+            />
+            <TouchableOpacity 
+              style={styles.sendButton}
+              onPress={() => handleSend()}
+            >
+              <Ionicons name="arrow-up" size={20} color="#090D14" />
+            </TouchableOpacity>
+          </View>
+
+          {/* History Drawer Modal */}
+          <Modal
+            visible={showHistoryModal}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setShowHistoryModal(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Past Copilot Sessions</Text>
+                  <TouchableOpacity onPress={() => setShowHistoryModal(false)}>
+                    <Ionicons name="close" size={24} color="#94A3B8" />
+                  </TouchableOpacity>
+                </View>
+
+                {pastSessions.map((session) => (
+                  <TouchableOpacity 
+                    key={session.id} 
+                    style={styles.historyItem}
+                    onPress={() => {
+                      setShowHistoryModal(false);
+                      handleSend(session.title);
+                    }}
+                  >
+                    <Ionicons name="chatbubble-ellipses-outline" size={18} color="#00F2FE" />
+                    <View style={styles.historyTextContainer}>
+                      <Text style={styles.historyItemTitle}>{session.title}</Text>
+                      <Text style={styles.historyItemTime}>{session.time}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </Modal>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

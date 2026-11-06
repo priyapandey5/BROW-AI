@@ -1,240 +1,172 @@
-// src/screens/HomeScreen.js
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  SafeAreaView,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../constants/theme';
-import { MARKET_INDICES, AI_FEATURED_SETUPS, MACRO_NEWS } from '../constants/mockData';
-
-const ECONOMIC_EVENTS = [
-  { id: '1', date: 'Nov 06', event: 'US Non-Farm Payrolls', consensus: '165K', prior: '142K', impact: 'HIGH' },
-  { id: '2', date: 'Nov 08', event: 'RBI MPC Policy Decision', consensus: '6.50% (Hold)', prior: '6.50%', impact: 'CRITICAL' },
-  { id: '3', date: 'Nov 12', event: 'India CPI Inflation (YoY)', consensus: '5.20%', prior: '5.49%', impact: 'HIGH' },
-];
+import { THEME } from '../constants/theme';
+import { MOCK_STOCKS, ECONOMIC_CALENDAR } from '../constants/mockData';
 
 export default function HomeScreen({ navigation }) {
-  const [activeFilter, setActiveFilter] = useState('All'); // 'All' | 'Watchlist' | 'Breakouts'
-  const [bookmarkedIds, setBookmarkedIds] = useState(['tatamotors']);
+  const [activeTab, setActiveTab] = useState('ALL'); // 'ALL' | 'WATCHLIST'
+  const [watchlist, setWatchlist] = useState(['RELIANCE', 'HDFCBANK']);
   const [showCalendar, setShowCalendar] = useState(false);
 
-  const toggleBookmark = (id) => {
-    setBookmarkedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+  const toggleWatchlist = (symbol) => {
+    if (watchlist.includes(symbol)) {
+      setWatchlist(watchlist.filter((item) => item !== symbol));
+    } else {
+      setWatchlist([...watchlist, symbol]);
+    }
   };
 
-  const displayedStocks = activeFilter === 'Watchlist'
-    ? AI_FEATURED_SETUPS.filter((s) => bookmarkedIds.includes(s.id))
-    : AI_FEATURED_SETUPS;
+  const displayedStocks = activeTab === 'WATCHLIST'
+    ? MOCK_STOCKS.filter((stock) => watchlist.includes(stock.symbol))
+    : MOCK_STOCKS;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* Top Header */}
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <View style={styles.container}>
+        {/* Header Bar */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.welcomeSub}>BROW INTELLIGENCE</Text>
-            <Text style={styles.welcomeTitle}>Live Market Deck</Text>
+            <Text style={styles.headerTitle}>BROW AI</Text>
+            <Text style={styles.headerSubtitle}>Institutional Alpha Desk</Text>
           </View>
-          <View style={styles.liveIndicator}>
-            <View style={styles.pulseDot} />
-            <Text style={styles.liveText}>SYSTEM LIVE</Text>
-          </View>
-        </View>
-
-        {/* Market Indices Horizontal Scroll */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.indicesContainer}
-        >
-          {MARKET_INDICES.map((item) => (
-            <View key={item.id} style={styles.indexCard}>
-              <Text style={styles.indexName}>{item.name}</Text>
-              <Text style={styles.indexPrice}>{item.price}</Text>
-              <View style={[styles.percentBadge, { backgroundColor: item.isUp ? '#00E67620' : '#FF3B3020' }]}>
-                <Ionicons
-                  name={item.isUp ? 'caret-up' : 'caret-down'}
-                  size={12}
-                  color={item.isUp ? COLORS.bullish : COLORS.bearish}
-                />
-                <Text style={[styles.percentText, { color: item.isUp ? COLORS.bullish : COLORS.bearish }]}>
-                  {item.percent}
-                </Text>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-
-        {/* Filter Pills with Watchlist */}
-        <View style={styles.filterRow}>
-          {['All Setups', 'Watchlist', 'High Conviction'].map((tab) => {
-            const key = tab === 'All Setups' ? 'All' : tab;
-            const isSelected = activeFilter === key;
-            return (
-              <TouchableOpacity
-                key={tab}
-                style={[styles.filterChip, isSelected && styles.activeFilterChip]}
-                onPress={() => setActiveFilter(key)}
-              >
-                {tab === 'Watchlist' && (
-                  <Ionicons
-                    name="bookmark"
-                    size={12}
-                    color={isSelected ? '#000' : COLORS.primaryLight}
-                    style={{ marginRight: 4 }}
-                  />
-                )}
-                <Text style={[styles.filterChipText, isSelected && styles.activeFilterChipText]}>
-                  {tab} {tab === 'Watchlist' ? `(${bookmarkedIds.length})` : ''}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* Section Title */}
-        <View style={styles.sectionHeader}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="sparkles" size={16} color={COLORS.primaryLight} />
-            <Text style={styles.sectionTitle}>
-              {activeFilter === 'Watchlist' ? 'My Saved Watchlist' : 'Disciplined AI Setups'}
-            </Text>
-          </View>
-          <Text style={styles.badgeText}>Real-Time Rules</Text>
-        </View>
-
-        {/* AI Setup Cards */}
-        {displayedStocks.map((stock) => (
-          <TouchableOpacity
-            key={stock.id}
-            style={styles.setupCard}
-            activeOpacity={0.7}
-            onPress={() => {
-              if (navigation) {
-                navigation.navigate('StockDetail', { stock: stock });
-              }
-            }}
-          >
-            <View style={styles.cardTopRow}>
-              <View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Text style={styles.stockSymbol}>{stock.symbol}</Text>
-                  <Text style={styles.exchangeBadge}>{stock.exchange}</Text>
-                  <TouchableOpacity
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    onPress={() => toggleBookmark(stock.id)}
-                  >
-                    <Ionicons
-                      name={bookmarkedIds.includes(stock.id) ? 'bookmark' : 'bookmark-outline'}
-                      size={16}
-                      color={bookmarkedIds.includes(stock.id) ? COLORS.primaryLight : COLORS.textMuted}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <Text style={styles.companyName}>{stock.companyName}</Text>
-              </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={styles.stockPrice}>{stock.currentPrice}</Text>
-                <Text style={styles.stockChange}>{stock.dayPercent}</Text>
-              </View>
-            </View>
-
-            <View style={styles.verdictRow}>
-              <View style={styles.verdictChip}>
-                <Ionicons name="shield-checkmark" size={14} color={COLORS.bullish} />
-                <Text style={styles.verdictText}>{stock.verdict}</Text>
-              </View>
-              <Text style={styles.rrText}>R:R {stock.riskReward}</Text>
-            </View>
-
-            <View style={styles.riskGaugeContainer}>
-              <View style={styles.gaugeLabels}>
-                <Text style={styles.gaugeLabelStop}>Stop: {stock.stopLoss}</Text>
-                <Text style={styles.gaugeLabelTarget}>Target: {stock.target1}</Text>
-              </View>
-              <View style={styles.gaugeTrack}>
-                <View style={styles.gaugeStopSegment} />
-                <View style={styles.gaugeTargetSegment} />
-              </View>
-            </View>
-
-            <Text style={styles.thesisText} numberOfLines={2}>
-              {stock.aiThesis}
-            </Text>
-
-            <View style={styles.invalidationBox}>
-              <Ionicons name="alert-circle-outline" size={14} color={COLORS.textMuted} />
-              <Text style={styles.invalidationText} numberOfLines={1}>
-                Invalidation: {stock.invalidation}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-
-        {/* Macro Calendar & News Intelligence Header */}
-        <View style={[styles.sectionHeader, { marginTop: 16 }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="newspaper-outline" size={16} color={COLORS.primaryLight} />
-            <Text style={styles.sectionTitle}>Macro & Economic Intelligence</Text>
-          </View>
-          <TouchableOpacity
+          <TouchableOpacity 
             style={styles.calendarToggleBtn}
             onPress={() => setShowCalendar(!showCalendar)}
           >
-            <Ionicons name="calendar-outline" size={13} color={COLORS.primaryLight} />
-            <Text style={styles.calendarToggleText}>
-              {showCalendar ? 'Hide Calendar' : 'Economic Cal'}
-            </Text>
+            <Ionicons 
+              name={showCalendar ? "calendar" : "calendar-outline"} 
+              size={22} 
+              color={THEME.colors.neonCyan || "#00F2FE"} 
+            />
           </TouchableOpacity>
         </View>
 
-        {/* Expandable Economic Calendar */}
-        {showCalendar && (
-          <View style={styles.calendarBox}>
-            <Text style={styles.calendarHeading}>Key Central Bank & Macro Triggers</Text>
-            {ECONOMIC_EVENTS.map((item) => (
-              <View key={item.id} style={styles.calendarItem}>
-                <View style={styles.dateBadge}>
-                  <Text style={styles.dateText}>{item.date}</Text>
-                </View>
-                <View style={{ flex: 1, marginHorizontal: 8 }}>
-                  <Text style={styles.eventText}>{item.event}</Text>
-                  <Text style={styles.eventSub}>Cons: {item.consensus} | Prior: {item.prior}</Text>
-                </View>
-                <View style={[styles.impactBadge, { backgroundColor: item.impact === 'CRITICAL' ? '#FF3B3020' : '#38BDF820' }]}>
-                  <Text style={[styles.impactBadgeText, { color: item.impact === 'CRITICAL' ? COLORS.bearish : COLORS.primaryLight }]}>
-                    {item.impact}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* News Feed */}
-        {MACRO_NEWS.map((news) => (
-          <View key={news.id} style={styles.newsCard}>
-            <View style={styles.newsTopRow}>
-              <Text style={styles.newsTag}>{news.tag}</Text>
-              <Text style={styles.newsTime}>{news.time}</Text>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Real-Time Indices Ticker Strip */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tickerContainer}>
+            <View style={styles.tickerItem}>
+              <Text style={styles.tickerName}>NIFTY 50</Text>
+              <Text style={styles.tickerPrice}>24,360.50</Text>
+              <Text style={styles.tickerGreen}>+0.62%</Text>
             </View>
-            <Text style={styles.newsHeadline}>{news.headline}</Text>
-            <View style={styles.impactRow}>
-              <Ionicons name="trending-up-outline" size={14} color={COLORS.bullish} />
-              <Text style={styles.newsImpact}>{news.impact}</Text>
+            <View style={styles.tickerItem}>
+              <Text style={styles.tickerName}>BANKNIFTY</Text>
+              <Text style={styles.tickerPrice}>51,940.20</Text>
+              <Text style={styles.tickerGreen}>+0.41%</Text>
             </View>
-          </View>
-        ))}
+            <View style={styles.tickerItem}>
+              <Text style={styles.tickerName}>BTC/USD</Text>
+              <Text style={styles.tickerPrice}>$68,450</Text>
+              <Text style={styles.tickerRed}>-1.12%</Text>
+            </View>
+            <View style={styles.tickerItem}>
+              <Text style={styles.tickerName}>GOLD</Text>
+              <Text style={styles.tickerPrice}>$2,740</Text>
+              <Text style={styles.tickerGreen}>+0.18%</Text>
+            </View>
+          </ScrollView>
 
-      </ScrollView>
+          {/* Expandable Macro Economic Calendar */}
+          {showCalendar && (
+            <View style={styles.calendarCard}>
+              <Text style={styles.sectionHeading}>Economic Calendar</Text>
+              {ECONOMIC_CALENDAR.map((event, idx) => (
+                <View key={idx} style={styles.calendarRow}>
+                  <View style={styles.calendarLeft}>
+                    <Text style={styles.calendarDate}>{event.date}</Text>
+                    <Text style={styles.calendarEvent}>{event.event}</Text>
+                  </View>
+                  <View style={styles.calendarRight}>
+                    <Text style={styles.calendarImpact}>{event.impact}</Text>
+                    <Text style={styles.calendarForecast}>Fcst: {event.forecast}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Filter Tabs */}
+          <View style={styles.tabFilterRow}>
+            <TouchableOpacity 
+              style={[styles.filterChip, activeTab === 'ALL' && styles.filterChipActive]}
+              onPress={() => setActiveTab('ALL')}
+            >
+              <Text style={[styles.filterChipText, activeTab === 'ALL' && styles.filterChipTextActive]}>
+                All Setups ({MOCK_STOCKS.length})
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.filterChip, activeTab === 'WATCHLIST' && styles.filterChipActive]}
+              onPress={() => setActiveTab('WATCHLIST')}
+            >
+              <Text style={[styles.filterChipText, activeTab === 'WATCHLIST' && styles.filterChipTextActive]}>
+                Watchlist ({watchlist.length})
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Stock Breakout Cards */}
+          <View style={styles.cardsContainer}>
+            {displayedStocks.map((stock) => {
+              const isSaved = watchlist.includes(stock.symbol);
+              return (
+                <TouchableOpacity 
+                  key={stock.id} 
+                  style={styles.stockCard}
+                  activeOpacity={0.8}
+                  onPress={() => navigation.navigate('StockDetail', { stock })}
+                >
+                  <View style={styles.stockCardHeader}>
+                    <View>
+                      <Text style={styles.stockSymbol}>{stock.symbol}</Text>
+                      <Text style={styles.stockCompany}>{stock.name}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => toggleWatchlist(stock.symbol)}>
+                      <Ionicons 
+                        name={isSaved ? "bookmark" : "bookmark-outline"} 
+                        size={22} 
+                        color={isSaved ? (THEME.colors.neonCyan || "#00F2FE") : "#64748B"} 
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.priceRow}>
+                    <Text style={styles.currentPrice}>₹{stock.price}</Text>
+                    <Text style={stock.change >= 0 ? styles.priceChangeGreen : styles.priceChangeRed}>
+                      {stock.change >= 0 ? `+${stock.change}%` : `${stock.change}%`}
+                    </Text>
+                  </View>
+
+                  {/* Visual Risk-to-Reward Gauge */}
+                  <View style={styles.gaugeContainer}>
+                    <View style={styles.gaugeBarBackground}>
+                      <View style={[styles.gaugeStopLossTrack, { flex: 1 }]} />
+                      <View style={[styles.gaugeTargetTrack, { flex: 2 }]} />
+                    </View>
+                    <View style={styles.gaugeLabels}>
+                      <Text style={styles.gaugeLabelText}>SL: ₹{stock.stopLoss}</Text>
+                      <Text style={styles.gaugeLabelText}>Target: ₹{stock.target}</Text>
+                    </View>
+                  </View>
+
+                  {/* Strategy Badge & Conviction */}
+                  <View style={styles.cardFooter}>
+                    <View style={styles.strategyTag}>
+                      <Text style={styles.strategyText}>{stock.strategy}</Text>
+                    </View>
+                    <Text style={styles.convictionText}>
+                      Conviction: <Text style={styles.convictionHighlight}>{stock.conviction}</Text>
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
