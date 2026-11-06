@@ -1,38 +1,33 @@
-// App.js
-import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AuthScreen from './src/screens/AuthScreen';
 import BottomTabNavigator from './src/navigation/BottomTabNavigator';
 import StockDetailScreen from './src/screens/StockDetailScreen';
 
-const Stack = createNativeStackNavigator();
+const Stack = createStackNavigator();
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
   return (
-    <NavigationContainer>
-      <StatusBar style="light" />
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!isAuthenticated ? (
-          <Stack.Screen name="Auth">
-            {(props) => (
-              <AuthScreen
-                {...props}
-                onLoginSuccess={() => setIsAuthenticated(true)}
-              />
-            )}
-          </Stack.Screen>
-        ) : (
-          <>
-            <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
-            <Stack.Screen name="StockDetail" component={StockDetailScreen} />
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+    
+    <SafeAreaProvider>
+      <StatusBar barStyle="light-content" backgroundColor="#090D14" />
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Auth"
+          screenOptions={{
+            headerShown: false,
+            cardStyle: { backgroundColor: '#090D14' },
+          }}
+        >
+          <Stack.Screen name="Auth" component={AuthScreen} />
+          <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
+          <Stack.Screen name="StockDetail" component={StockDetailScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
