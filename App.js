@@ -1,18 +1,17 @@
 import React from 'react';
 import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AuthScreen from './src/screens/AuthScreen';
 import BottomTabNavigator from './src/navigation/BottomTabNavigator';
 import StockDetailScreen from './src/screens/StockDetailScreen';
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    
     <SafeAreaProvider>
       <StatusBar barStyle="light-content" backgroundColor="#090D14" />
       <NavigationContainer>
@@ -20,7 +19,7 @@ export default function App() {
           initialRouteName="Auth"
           screenOptions={{
             headerShown: false,
-            cardStyle: { backgroundColor: '#090D14' },
+            contentStyle: { backgroundColor: '#090D14' },
           }}
         >
           <Stack.Screen name="Auth" component={AuthScreen} />
