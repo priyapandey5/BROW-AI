@@ -56,8 +56,9 @@ The 12 desktop-based modules are consolidated into a clean, mobile-optimized 4-t
 
 ---
 
-## 📂 Project Architecture 
+## 📂 Project Architecture
 
+```text
 brow-ai-mobile/
 ├── assets/                  # App icons and splash assets
 ├── src/
@@ -77,8 +78,7 @@ brow-ai-mobile/
 ├── app.json                 # Expo configuration
 ├── eas.json                 # Build configuration for standalone APK
 └── package.json
-
----
+```
 
 ## 💻 Running the App Locally
 
