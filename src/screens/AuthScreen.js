@@ -14,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
 
-export default function AuthScreen({ onLoginSuccess }) {
+export default function AuthScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
@@ -102,8 +102,8 @@ export default function AuthScreen({ onLoginSuccess }) {
             </TouchableOpacity>
 
             {/* Fast Guest Bypass for Reviewers */}
-            <TouchableOpacity style={styles.guestButton} onPress={handleContinue}>
-              <Text style={styles.guestButtonText}>Continue as Guest (Instant Preview)</Text>
+            <TouchableOpacity style={styles.guestButton} onPress={() => navigation.replace('MainTabs')}>
+            <Text style={styles.guestButtonText}>Sign in as Guest</Text>
             </TouchableOpacity>
 
             {/* Switch Sign in / Sign up */}

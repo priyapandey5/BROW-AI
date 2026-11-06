@@ -1,7 +1,7 @@
-// src/navigation/BottomTabNavigator.js
 import React from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants/theme';
 
@@ -17,25 +17,62 @@ export default function BottomTabNavigator() {
 
   return (
     <Tab.Navigator
-      screenOptions={{
+      initialRouteName="Markets"
+      screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarShowLabel: true,
+        tabBarActiveTintColor: COLORS?.primaryLight || '#00F2FE',
+        tabBarInactiveTintColor: COLORS?.textSecondary || '#64748B',
         tabBarStyle: {
-          backgroundColor: '#090D14',
-          borderTopColor: '#1E293B',
+          backgroundColor: COLORS?.surface || '#111827',
+          borderTopColor: COLORS?.border || '#1E293B',
           borderTopWidth: 1,
-          height: 60 + Math.max(insets.bottom, 12), // Dynamic inset calculation
-          paddingBottom: Math.max(insets.bottom, 10), // Buttons ke upar perfect spacing
-          paddingTop: 8,
+          height: Platform.OS === 'android' ? 62 + insets.bottom : 58 + insets.bottom,
+          paddingBottom: Math.max(insets.bottom, 8),
+          paddingTop: 6,
         },
-        tabBarActiveTintColor: '#00F2FE',
-        tabBarInactiveTintColor: '#64748B',
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
+          fontSize: 10,
+          fontWeight: '700',
+          letterSpacing: 0.5,
         },
-      }}
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          if (route.name === 'Markets') {
+            iconName = focused ? 'trending-up' : 'trending-up-outline';
+          } else if (route.name === 'Radar') {
+            iconName = focused ? 'scan' : 'scan-outline';
+          } else if (route.name === 'Copilot') {
+            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
+          } else if (route.name === 'Alpha') {
+            iconName = focused ? 'pie-chart' : 'pie-chart-outline';
+          }
+
+          return <Ionicons name={iconName} size={20} color={color} />;
+        },
+      })}
     >
-      {/* Aapke existing Tab.Screen components yahan rahenge */}
+      <Tab.Screen 
+        name="Markets" 
+        component={HomeScreen} 
+        options={{ tabBarLabel: 'Markets' }}
+      />
+      <Tab.Screen 
+        name="Radar" 
+        component={RadarScreen} 
+        options={{ tabBarLabel: 'Radar' }}
+      />
+      <Tab.Screen 
+        name="Copilot" 
+        component={CopilotChatScreen} 
+        options={{ tabBarLabel: 'Copilot' }}
+      />
+      <Tab.Screen 
+        name="Alpha" 
+        component={AlphaPortfolioScreen} 
+        options={{ tabBarLabel: 'Alpha' }}
+      />
     </Tab.Navigator>
   );
 }
